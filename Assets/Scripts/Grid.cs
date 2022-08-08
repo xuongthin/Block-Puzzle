@@ -18,6 +18,7 @@ public class Grid : MonoBehaviour
     private void Start()
     {
         grid = new Block[64];
+        bitMask = 0;
         size = cellSize * UIManager.Instance.UIScale;
     }
 
@@ -37,12 +38,18 @@ public class Grid : MonoBehaviour
         return x + y * 8;
     }
 
-    public Vector2 GetCellAt(Vector2 position)
+    public bool GetCellStatus(int id)
     {
-        int cellId = GetCellIdAt(position);
-        int x = cellId % 8;
-        int y = cellId / 8;
-        return new Vector2(size / 2 + x * size, size / 2 * y * size);
+        if (id < 0)
+            return false;
+        return (bitMask & (1 << id)) == 0;
+    }
+
+    public Vector2 CellId2Position(int id)
+    {
+        int x = id % 8;
+        int y = id / 8;
+        return new Vector2(size / 2 + x * size, size / 2 + y * size);
     }
 
     public bool CheckValid(int cellId, long blockBitMask, int bitMaskLength)
@@ -94,14 +101,13 @@ public class Grid : MonoBehaviour
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
-        float size = cellSize * 0.3268518f;
-        Vector3 startPosition = transform.position + new Vector3(size / 2, size / 2, 0);
+        Vector3 startPosition = transform.position + new Vector3(cellSize / 2, cellSize / 2, 0);
         for (int i = 0; i < 8; i++)
         {
             for (int j = 0; j < 8; j++)
             {
-                Vector3 position = startPosition + new Vector3(i * size, j * size);
-                Gizmos.DrawWireCube(position, new Vector3(size, size, 0));
+                Vector3 position = startPosition + new Vector3(i * cellSize, j * cellSize);
+                Gizmos.DrawWireCube(position, new Vector3(cellSize, cellSize, 0));
             }
         }
     }

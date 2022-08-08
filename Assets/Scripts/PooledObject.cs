@@ -17,7 +17,7 @@ public class PooledObject : MonoBehaviour
         gameObject.SetActive(true);
     }
 
-    public virtual void Return()
+    public virtual void ReturnToPool()
     {
         pool.Add(this);
         gameObject.SetActive(false);

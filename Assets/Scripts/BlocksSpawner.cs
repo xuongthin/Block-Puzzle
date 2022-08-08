@@ -1,13 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class BlocksSpawner : MonoBehaviour
 {
     [SerializeField] private Vector2[] spawnPositions;
+    private Blocks[] blocksList;
 
     private void Start()
     {
+        blocksList = new Blocks[3];
         GameManager.Instance.OnGameStart += SpawnBlocks;
     }
 
@@ -18,7 +21,18 @@ public class BlocksSpawner : MonoBehaviour
             Blocks blocks = Pools.Instance.GetBlocks();
             blocks.transform.parent = transform;
             blocks.transform.position = transform.position + (Vector3)spawnPositions[i];
-            blocks.Init();
+            blocks.InitByShapeData();
+            // blocks.Init();
+            blocksList[i] = blocks;
+        }
+    }
+
+    public void RecreateBlocks()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            blocksList[i].Break();
+            blocksList[i].InitByShapeData();
         }
     }
 
@@ -36,4 +50,18 @@ public class BlocksSpawner : MonoBehaviour
         }
     }
 #endif
+}
+
+[CustomEditor(typeof(BlocksSpawner))]
+public class BlocksSpawnerEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+        if (GUILayout.Button("Recreate blocks"))
+        {
+            BlocksSpawner script = (target as BlocksSpawner);
+            script.RecreateBlocks();
+        }
+    }
 }

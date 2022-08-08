@@ -95,18 +95,36 @@ public static class Helper
         return o;
     }
 
-    public static void FlipHorizontal<T>(this T[,] mat)
+    // public static void FlipHorizontal<T>(this T[,] mat)
+    // {
+    //     for (int j = 0; j < mat.GetLength(0); j++)
+    //     {
+    //         for (int i = 0; i < (mat.GetLength(1) + 1) / 2; i++)
+    //         {
+    //             // swap
+    //             T temp = mat[j, i];
+    //             mat[j, i] = mat[j, mat.GetLength(1) - 1 - i];
+    //             mat[j, mat.GetLength(1) - 1 - i] = temp;
+    //         }
+    //     }
+    // }
+
+    public static T[,] FlipHorizontal<T>(this T[,] mat)
     {
-        for (int j = 0; j < mat.GetLength(0); j++)
+        T[,] clone = (T[,])mat.Clone();
+
+        for (int j = 0; j < clone.GetLength(0); j++)
         {
-            for (int i = 0; i < (mat.GetLength(1) + 1) / 2; i++)
+            for (int i = 0; i < (clone.GetLength(1) + 1) / 2; i++)
             {
                 // swap
-                T temp = mat[j, i];
-                mat[j, i] = mat[j, mat.GetLength(1) - 1 - i];
-                mat[j, mat.GetLength(1) - 1 - i] = temp;
+                T temp = clone[j, i];
+                clone[j, i] = clone[j, clone.GetLength(1) - 1 - i];
+                clone[j, clone.GetLength(1) - 1 - i] = temp;
             }
         }
+
+        return clone;
     }
 
     public static void Rotate90<T>(this T[,] mat)
@@ -124,5 +142,26 @@ public static class Helper
                 mat[N - 1 - y, x] = temp;
             }
         }
+    }
+
+    public static T[,] Rotate<T>(this T[,] mat)
+    {
+        T[,] clone = (T[,])mat.Clone();
+
+        int N = clone.GetLength(0);
+        for (int x = 0; x < N / 2; x++)
+        {
+            for (int y = x; y < N - x - 1; y++)
+            {
+                T temp = clone[x, y];
+
+                clone[x, y] = clone[y, N - 1 - x];
+                clone[y, N - 1 - x] = clone[N - 1 - x, N - 1 - y];
+                clone[N - 1 - x, N - 1 - y] = clone[N - 1 - y, x];
+                clone[N - 1 - y, x] = temp;
+            }
+        }
+
+        return clone;
     }
 }

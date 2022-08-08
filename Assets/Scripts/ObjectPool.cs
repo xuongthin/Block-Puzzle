@@ -25,6 +25,7 @@ public class ObjectPool
     public void Add(PooledObject obj)
     {
         stack.Push(obj);
+        obj.transform.parent = transform;
     }
 
     public PooledObject Release()
@@ -41,7 +42,7 @@ public class ObjectPool
 
     private PooledObject CreateObject()
     {
-        PooledObject obj = Object.Instantiate(prefab, transform);
+        PooledObject obj = Object.Instantiate(prefab);
         obj.OnCreated(this);
         Add(obj);
 

@@ -7,19 +7,43 @@ public class Blocks : PooledObject, IPointerDownHandler, IDragHandler, IPointerU
 {
     private BlocksSetting setting;
     private BlockColor color;
-    private bool isPlayable;
     private BlocksData data;
     private List<Block> blockList;
+    private Shape shape;
+
+    private bool isPlayable;
+    private bool isPlacable;
 
     public override void OnCreated(ObjectPool pool)
     {
         base.OnCreated(pool);
+        blockList = new List<Block>();
         setting = GameManager.Instance.BlocksSetting;
     }
 
-    public void Init(Matrix5x5 shapes)
+    public void InitByShapeData()
     {
+        color = (BlockColor)Random.Range(0, 7);
+        shape = ShapeManager.Instance.GetRandomShape();
 
+        bool[,] matrix = shape.matrix;
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                if (matrix[i, j])
+                {
+                    Block block = Pools.Instance.GetBlock();
+                    block.transform.parent = transform;
+                    block.transform.localPosition = new Vector2(i, j) * setting.size;
+                    block.SetColor(color);
+
+                    blockList.Add(block);
+                }
+            }
+        }
+
+        CheckPlayability();
     }
 
     public void Init()
@@ -46,15 +70,71 @@ public class Blocks : PooledObject, IPointerDownHandler, IDragHandler, IPointerU
     {
         transform.position = (eventData.position + setting.offset);
         // TODO: check grid
+        if (CheckPlacability())
+        {
+            isPlacable = true;
+            ShowGhost();
+        }
+        else
+        {
+            isPlacable = false;
+            HideGhost();
+        }
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        transform.position = (eventData.position + setting.offset);
+        if (isPlacable)
+        {
+            while (blockList.Count > 0)
+            {
+                blockList[0].PlaceOnGrid();
+                blockList.RemoveAt(0);
+            }
+        }
+        else
+        {
+            // TODO: return to init position
+        }
+    }
+
+    // NOTE: this method use to test recreate blocks continuously 
+    // TODO: remove this
+    public void Break()
+    {
+        while (blockList.Count > 0)
+        {
+            blockList[0].ReturnToPool();
+            blockList.RemoveAt(0);
+        }
+    }
+
+    private bool CheckPlacability()
+    {
+        foreach (Block block in blockList)
+        {
+            if (!block.CheckOnGrid())
+                return false;
+        }
+        return true;
+    }
+
+    private void ShowGhost()
+    {
+        foreach (Block block in blockList)
+        {
+            block.PlaceGhost();
+        }
+    }
+
+    private void HideGhost()
+    {
+
     }
 
     private void CheckPlayability()
     {
+        isPlayable = Grid.Instance.CheckBlockPlayability(shape.bitMask);
 
         if (isPlayable)
         {
