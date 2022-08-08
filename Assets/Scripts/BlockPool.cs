@@ -20,7 +20,7 @@ public class BlockPool : MonoBehaviour
         GameObject tmp;
         for (int i = 0; i < amountToPool; i++)
         {
-            tmp = Instantiate(prefabBlock);
+            tmp = Instantiate(prefabBlock, transform);
             tmp.SetActive(false);
             pooledBlocks.Add(tmp);
         }
@@ -36,9 +36,15 @@ public class BlockPool : MonoBehaviour
             }
         }
 
-        GameObject newObject = Instantiate(prefabBlock);
+        GameObject newObject = Instantiate(prefabBlock, transform);
         newObject.SetActive(false);
         pooledBlocks.Add(newObject);
         return newObject;
+    }
+
+    public void ReturnBlock(GameObject block)
+    {
+        block.SetActive(false);
+        block.transform.parent = transform;
     }
 }

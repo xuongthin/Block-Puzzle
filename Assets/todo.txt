@@ -1,0 +1,12 @@
+danh sách các hình có thể có:
+- Danh sách các hình sử dụng hard code để dễ dàng quản lý việc tạo ma trận xoay, ma trận lật (tránh 1 hình lặp lại nhiều lần)
+- Ma trận hình để thiết lập vị trí các block. Ma trận này thuộc kiểu bool[,]
+- Bit mask của hình dạng này
+
+Blocks sẽ chọn ngẫu nhiên một trong các hình trên:
+- có thể chọn trùng lặp.
+- Khi kéo thả thì kiểm tra lần lượt từng block, xem chúng có hợp lệ hay không.
+- Nếu hợp lệ thì các block con sẽ gọi ghost tại vị trí snap.
+
+Block sẽ cache vị trí snap của nó
+- Dùng để trong trường hợp vị trí hợp lệ, việc gọi ghost sẽ ko cần thực hiện lại việc kiểm tra vị trí nữa
