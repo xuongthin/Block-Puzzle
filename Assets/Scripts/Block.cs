@@ -5,36 +5,50 @@ using UnityEngine.UI;
 
 public class Block : PooledObject
 {
-    private Image image;
-    private int cellId;
+    [SerializeField] private Image image;
+    private BlockColor color;
+    private Vector2Int cell;
+    public Vector2Int Cell => cell;
 
     public override void OnCreated(ObjectPool pool)
     {
         base.OnCreated(pool);
-        image = GetComponent<Image>();
     }
 
-    public void SetColor(BlockColor color)
+    public void SetColor()
     {
+        SetColor(color, false);
+    }
+
+    public void SetColor(BlockColor color, bool temporary = false)
+    {
+        if (!temporary)
+            this.color = color;
+
         Sprite sprite = GameManager.Instance.BlockSetting.sprites[((int)color)];
         image.sprite = sprite;
     }
 
-    public bool CheckOnGrid()
+    public void CheckOnCell()
     {
-        cellId = Grid.Instance.GetCellIdAt(transform.position);
-        return Grid.Instance.GetCellStatus(cellId);
+        cell = Grid.Instance.Position2Cell(transform.position);
     }
 
-    public void PlaceGhost()
+    public bool OnEmptyCell()
     {
-        // TODO: 
+        return Grid.Instance.CheckCellEmpty(cell);
+    }
+
+    public void PlacePreview()
+    {
+        Grid.Instance.Fill(this, cell, true);
     }
 
     public void PlaceOnGrid()
     {
         // TODO: create animation by DoTween
         transform.parent = Grid.Instance.transform;
-        transform.localPosition = Grid.Instance.CellId2Position(cellId);
+        transform.localPosition = Grid.Instance.Cell2LocalPosition(cell);
+        Grid.Instance.Fill(this, cell);
     }
 }

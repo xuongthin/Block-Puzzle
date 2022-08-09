@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -12,10 +13,17 @@ public class UIManager : MonoBehaviour
     }
 
     private RectTransform rectTransform;
+    [SerializeField] private GameObject gameOverGroup;
     public float UIScale => rectTransform.localScale.x;
 
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
+        GameManager.Instance.OnGameOver += ShowGameOver;
+    }
+
+    private void ShowGameOver()
+    {
+        gameOverGroup.SetActive(true);
     }
 }

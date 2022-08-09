@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4196713158480013147}
-  - component: {fileID: 6696631742433695671}
+  - component: {fileID: 1029687557448287196}
   m_Layer: 5
-  m_Name: Block
+  m_Name: Preview Block
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -37,7 +37,7 @@ RectTransform:
   m_AnchoredPosition: {x: -61, y: 66}
   m_SizeDelta: {x: 115, y: 114}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &6696631742433695671
+--- !u!114 &1029687557448287196
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -108,7 +108,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.5019608}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:

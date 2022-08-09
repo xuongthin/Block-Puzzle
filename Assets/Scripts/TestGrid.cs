@@ -8,7 +8,7 @@ public class TestGrid : MonoBehaviour, IPointerDownHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        int id = Grid.Instance.GetCellIdAt(eventData.position);
+        Vector2Int id = Grid.Instance.Position2Cell(eventData.position);
         Debug.Log(id);
     }
 }

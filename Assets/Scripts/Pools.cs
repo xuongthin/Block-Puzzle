@@ -10,18 +10,15 @@ public class Pools : MonoBehaviour
         Instance = this;
     }
 
-    private List<ObjectPool> pools;
-    [SerializeField] private Blocks blocksPrefab;
     [SerializeField] private Block blockPrefab;
-    [SerializeField] private PooledObject ghostBlockPrefab;
+    [SerializeField] private PooledObject previewBlockPrefab;
     private ObjectPool blockPool;
-    private ObjectPool blocksPool;
-    private ObjectPool ghostBlockPool;
+    private ObjectPool previewBlockPool;
 
     private void Start()
     {
         blockPool = new ObjectPool(blockPrefab, 100, transform);
-        blocksPool = new ObjectPool(blocksPrefab, 3, transform);
+        previewBlockPool = new ObjectPool(previewBlockPrefab, 20, transform);
     }
 
     public Block GetBlock()
@@ -29,8 +26,8 @@ public class Pools : MonoBehaviour
         return (blockPool.Release() as Block);
     }
 
-    public Blocks GetBlocks()
+    public Block GetPreviewBlock()
     {
-        return (blocksPool.Release() as Blocks);
+        return (previewBlockPool.Release() as Block);
     }
 }

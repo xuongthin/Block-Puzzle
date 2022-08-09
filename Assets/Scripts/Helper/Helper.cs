@@ -165,3 +165,12 @@ public static class Helper
         return clone;
     }
 }
+
+[Serializable]
+public struct Vector4Int
+{
+    public int top;
+    public int left;
+    public int right;
+    public int bottom;
+}

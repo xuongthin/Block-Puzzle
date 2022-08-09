@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class Grid : MonoBehaviour
 {
@@ -11,91 +12,225 @@ public class Grid : MonoBehaviour
     }
 
     [SerializeField] private float cellSize;
-    private long bitMask;
-    private Block[] grid;
     private float size;
+    private Block[,] grid;
+    private bool[,] fill;
+    private bool[,] preview;
+    private HashSet<int> checkListX;
+    private HashSet<int> checkListY;
+    private HashSet<int> fullfilListX;
+    private HashSet<int> fullfilListY;
 
     private void Start()
     {
-        grid = new Block[64];
-        bitMask = 0;
         size = cellSize * UIManager.Instance.UIScale;
+        grid = new Block[8, 8];
+        fill = new bool[8, 8];
+        preview = new bool[8, 8];
+        ResetPreview();
+        checkListX = new HashSet<int>();
+        checkListY = new HashSet<int>();
+        fullfilListX = new HashSet<int>();
+        fullfilListY = new HashSet<int>();
+
+        GameManager.Instance.OnBlockPlaced += AfterFill;
     }
 
-    public int GetCellIdAt(Vector2 position)
+    public Vector2Int Position2Cell(Vector2 position)
     {
         position -= (Vector2)transform.position;
 
         if (position.x < 0 || position.y < 0)
-            return -1;
+            return Vector2Int.down;
 
         int x = (int)(position.x / size);
         int y = (int)(position.y / size);
 
-        if (x > 7 || y > 7)
-            return -1;
-
-        return x + y * 8;
+        return new Vector2Int(x, y);
     }
 
-    public bool GetCellStatus(int id)
+    public bool CheckCellEmpty(Vector2Int cell)
     {
-        if (id < 0)
+        if (cell.x < 0 || cell.x >= fill.GetLength(0)
+         || cell.y < 0 || cell.y >= fill.GetLength(1))
             return false;
-        return (bitMask & (1 << id)) == 0;
+        return !fill[cell.x, cell.y];
     }
 
-    public Vector2 CellId2Position(int id)
+    public Vector2 Cell2LocalPosition(Vector2Int cell)
     {
-        int x = id % 8;
-        int y = id / 8;
-        return new Vector2(size / 2 + x * size, size / 2 + y * size);
+        return new Vector2(size / 2 + cell.x * size, size / 2 + cell.y * size);
     }
 
-    public bool CheckValid(int cellId, long blockBitMask, int bitMaskLength)
+    public void Fill(Block block, Vector2Int cell, bool temporary = false)
     {
-        if (cellId + bitMaskLength > 64)
-            return false;
-
-        blockBitMask = blockBitMask << cellId;
-        return (bitMask & blockBitMask) == 0;
-    }
-
-    public bool CheckBlocksType(BlocksData data)
-    {
-        long blockBitMask = data.bitMask;
-        int bitMaskLength = data.bitMaskLength;
-
-        for (int i = 0; i <= 64 - bitMaskLength; i++)
+        if (temporary)
         {
-            if (CheckValid(i, blockBitMask, bitMaskLength))
-                return true;
+            // Block block = Pools.Instance.
+            preview[cell.x, cell.y] = true;
+            checkListX.Add(cell.x);
+            checkListY.Add(cell.y);
+        }
+        else
+        {
+            grid[cell.x, cell.y] = block;
+            fill[cell.x, cell.y] = true;
+        }
+    }
+
+    public bool CheckBlockPlayability(Shape shape)
+    {
+        bool[,] matrix = shape.matrix;
+        Vector4Int space = shape.space;
+        for (int i = -2; i <= 5; i++)
+        {
+            for (int j = -2; j <= 5; j++)
+            {
+                if (!CheckMatrixOverlap(matrix, new Vector2Int(i, j)))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void CheckPreview()
+    {
+        BlockColor color = BlocksManager.Instance.MovingBlocks.BlockColor;
+
+        foreach (int x in checkListX)
+        {
+            if (CheckColumnFilled(true, x))
+            {
+                fullfilListX.Add(x);
+                for (int y = 0; y < 8; y++)
+                {
+                    if (grid[x, y] != null)
+                        grid[x, y].SetColor(color, true);
+                }
+            }
+        }
+
+        foreach (int y in checkListY)
+        {
+            if (CheckRowFilled(true, y))
+            {
+                fullfilListY.Add(y);
+                for (int x = 0; x < 8; x++)
+                {
+                    if (grid[x, y] != null)
+                        grid[x, y].SetColor(color, true);
+                }
+            }
+        }
+    }
+
+    public void ClearPreview()
+    {
+        foreach (int x in fullfilListX)
+            for (int y = 0; y < 8; y++)
+            {
+                if (grid[x, y] != null)
+                    grid[x, y].SetColor();
+            }
+
+        fullfilListX.Clear();
+
+        foreach (int y in fullfilListY)
+            for (int x = 0; x < 8; x++)
+            {
+                if (grid[x, y] != null)
+                    grid[x, y].SetColor();
+            }
+
+        fullfilListY.Clear();
+        ResetPreview();
+    }
+
+    public void AfterFill()
+    {
+        foreach (int x in fullfilListX)
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                grid[x, y].ReturnToPool();
+                grid[x, y] = null;
+                fill[x, y] = false;
+            }
+        }
+
+        foreach (int y in fullfilListY)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                if (fill[x, y])
+                {
+                    grid[x, y].ReturnToPool();
+                    grid[x, y] = null;
+                    fill[x, y] = false;
+                }
+            }
+        }
+
+        ResetPreview();
+    }
+
+    private void ResetPreview()
+    {
+        for (int x = 0; x < 8; x++)
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                preview[x, y] = fill[x, y];
+            }
+        }
+    }
+
+    private bool CheckMatrixOverlap(bool[,] matrix, Vector2Int shift)
+    {
+        for (int i = 0; i < matrix.GetLength(0); i++)
+        {
+            for (int j = 0; j < matrix.GetLength(1); j++)
+            {
+                int x = i + shift.x;
+                int y = j + shift.y;
+
+                if (0 < x && x < fill.GetLength(0) && 0 < y && y < fill.GetLength(1))
+                {
+                    if (matrix[i, j] && fill[x, y])
+                        return true;
+                }
+                else if (matrix[i, j])
+                {
+                    return true;
+                }
+            }
         }
 
         return false;
     }
 
-    public bool CheckBlockPlayability(long blockBitMask)
+    private bool CheckRowFilled(bool checkPreview, int y)
     {
-        long forward = blockBitMask;
-        long backward = blockBitMask;
-
-        while (forward >= 0)
+        bool[,] matrix = checkPreview ? preview : fill;
+        for (int x = 0; x < matrix.GetLength(0); x++)
         {
-            forward = forward << 1;
-            if ((bitMask & forward) == 0)
-                return true;
+            if (!matrix[x, y])
+                return false;
         }
+        return true;
+    }
 
-        while (backward >= 0)
+    private bool CheckColumnFilled(bool checkPreview, int x)
+    {
+        bool[,] matrix = checkPreview ? preview : fill;
+        for (int y = 0; y < matrix.GetLength(1); y++)
         {
-            if ((bitMask & backward) == 0)
-                return true;
-
-            backward = backward << -1;
+            if (!matrix[x, y])
+                return false;
         }
-
-        return false;
+        return true;
     }
 
 #if UNITY_EDITOR
@@ -106,10 +241,24 @@ public class Grid : MonoBehaviour
         {
             for (int j = 0; j < 8; j++)
             {
+                if (fill[i, j])
+                    Gizmos.color = Color.red;
+                else
+                    Gizmos.color = Color.blue;
+
                 Vector3 position = startPosition + new Vector3(i * cellSize, j * cellSize);
-                Gizmos.DrawWireCube(position, new Vector3(cellSize, cellSize, 0));
+                Gizmos.DrawWireCube(position, new Vector3(cellSize, cellSize, 0) * 0.9f);
             }
         }
     }
 #endif
+}
+
+[CustomEditor(typeof(Grid))]
+public class GridEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+    }
 }

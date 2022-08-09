@@ -2,14 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShapeManager : MonoBehaviour
+[System.Serializable]
+public class ShapePool
 {
-    public static ShapeManager Instance;
-    private void Awake()
-    {
-        Instance = this;
-    }
-
     public readonly int[] I1 = {
         0, 0, 0, 0, 0,
         0, 0, 0, 0, 0,
@@ -107,9 +102,8 @@ public class ShapeManager : MonoBehaviour
     };
 
     private List<Shape> shapes;
-    public List<Shape> Shapes => shapes;
 
-    private void Start()
+    public ShapePool()
     {
         shapes = new List<Shape>();
         CreateShapes();
@@ -171,10 +165,7 @@ public class ShapeManager : MonoBehaviour
 
     private void CreateShape(bool[,] matrix)
     {
-        Shape shape = new Shape();
-        shape.matrix = matrix;
-        shape.bitMask = GetBitMask(matrix);
-
+        Shape shape = new Shape(matrix);
         shapes.Add(shape);
     }
 
@@ -196,8 +187,59 @@ public class ShapeManager : MonoBehaviour
     }
 }
 
+[System.Serializable]
 public class Shape
 {
     public bool[,] matrix;
-    public long bitMask;
+    public Vector4Int space;
+
+    public Shape()
+    {
+        matrix = new bool[5, 5];
+    }
+
+    public Shape(bool[,] matrix)
+    {
+        if (matrix.GetLongLength(0) == 5 && matrix.GetLongLength(1) == 5)
+        {
+            this.matrix = matrix;
+            CalculateSpace();
+        }
+        else
+        {
+            Debug.Log("Invalid param");
+            matrix = new bool[5, 5];
+        }
+    }
+
+    public void CalculateSpace()
+    {
+        space = new Vector4Int { left = 5, right = 5, top = 5, bottom = 5 };
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                if (matrix[i, j])
+                {
+                    int top = 4 - j;
+                    int bottom = j;
+
+                    int left = i;
+                    int right = 4 - i;
+
+                    if (top < space.top)
+                        space.top = top;
+
+                    if (bottom < space.bottom)
+                        space.bottom = bottom;
+
+                    if (left < space.left)
+                        space.left = left;
+
+                    if (right < space.right)
+                        space.right = right;
+                }
+            }
+        }
+    }
 }
