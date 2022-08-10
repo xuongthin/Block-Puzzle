@@ -11,6 +11,7 @@ public class Grid : MonoBehaviour
     }
 
     [SerializeField] private float cellSize;
+    [SerializeField][Range(0, 1)] private float cellDetect;
     private float size;
     private Block[,] grid;
     private bool[,] fill;
@@ -44,10 +45,17 @@ public class Grid : MonoBehaviour
         if (position.x < 0 || position.y < 0)
             return Vector2Int.down;
 
-        int x = (int)(position.x / size);
-        int y = (int)(position.y / size);
+        Vector2Int cell = new Vector2Int();
+        cell.x = (int)(position.x / size);
+        cell.y = (int)(position.y / size);
 
-        return new Vector2Int(x, y);
+        Vector2 normalizePosition = new Vector2(cell.x, cell.y) * size;
+
+        Vector2 distance = normalizePosition - position;
+        if (distance.sqrMagnitude > Mathf.Pow(size * cellDetect, 2))
+            return Vector2Int.down;
+
+        return cell;
     }
 
     public bool CheckCellEmpty(Vector2Int cell)

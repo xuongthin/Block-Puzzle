@@ -15,7 +15,7 @@ public class UIManager : MonoBehaviour
 
     #region Cache
     [SerializeField] private RectTransform rectTransform;
-    [SerializeField] private GameObject gameOverGroup;
+    [SerializeField] private EndgameGroup endgameGroup;
     [SerializeField] private Text bestScore;
     [SerializeField] private Text score;
     [SerializeField] private float addScoreDelay;
@@ -36,18 +36,18 @@ public class UIManager : MonoBehaviour
     {
         addScoreQueue = new Queue<int>();
         GameManager.Instance.OnGameStart += OnGameStart;
-        GameManager.Instance.OnGameOver += ShowGameOver;
+        GameManager.Instance.OnGameOver += ShowEndgame;
+        Helper.GetPlayerPref(out _bestScore, BEST_SCORE, 0);
     }
 
     public void OnGameStart()
     {
         addScoreQueue.Clear();
-        Helper.GetPlayerPref(out _bestScore, BEST_SCORE, 0);
         bestScore.text = _bestScore.ToString();
         score.text = "0";
     }
 
-    public void AddScore(int additionalScore)
+    public void QueueAddScore(int additionalScore)
     {
         if (addScoreQueue.Count > 0)
         {
@@ -63,7 +63,7 @@ public class UIManager : MonoBehaviour
     private IEnumerator UpdateScore()
     {
         int additionalScore = addScoreQueue.Dequeue();
-        UpdateScore(additionalScore);
+        AddScore(additionalScore);
         yield return Yielders.Get(addScoreDelay);
         if (addScoreQueue.Count > 0)
         {
@@ -71,20 +71,27 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void UpdateScore(int additionalScore)
+    private void AddScore(int additionalScore)
     {
         _score += additionalScore;
-        score.text = _score.ToString();
+        // score.text = _score.ToString();
         if (_score > _bestScore)
         {
             _bestScore = _score;
-            bestScore.text = _bestScore.ToString();
+            // bestScore.text = _bestScore.ToString();
             PlayerPrefs.SetInt(BEST_SCORE, _bestScore);
         }
+        UpdateUIScore();
     }
 
-    private void ShowGameOver()
+    private void UpdateUIScore()
     {
-        gameOverGroup.SetActive(true);
+        score.text = _score.ToString();
+        bestScore.text = _bestScore.ToString();
+    }
+
+    private void ShowEndgame()
+    {
+        endgameGroup.Show(_score, _bestScore);
     }
 }

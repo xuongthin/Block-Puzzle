@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6659c032a87224cb7a76fb80f46a1d, type: 3}
+  m_Name: Shape Pool
+  m_EditorClassIdentifier: 
+  I1Probability: 2
+  I2Probability: 4
+  I3Probability: 5
+  I4Probability: 3
+  I5Probability: 2
+  L2Probability: 4
+  L23Probability: 3
+  L32Probability: 3
+  L33Probability: 2
+  ZProbability: 3
+  TProbability: 3
+  O2Probability: 4
+  O3Probability: 2

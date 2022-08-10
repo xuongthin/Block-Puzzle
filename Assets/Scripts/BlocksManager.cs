@@ -12,7 +12,7 @@ public class BlocksManager : MonoBehaviour
 
     [SerializeField] private Blocks[] blocksList;
     [SerializeField] private Vector2[] spawnPositions;
-    [SerializeField] private ShapePool shapeManager;
+    [SerializeField] private ShapePool shapePool;
 
     private Blocks movingBlocks;
 
@@ -20,7 +20,7 @@ public class BlocksManager : MonoBehaviour
 
     private void Start()
     {
-        shapeManager = new ShapePool();
+        shapePool.Init();
         GameManager.Instance.OnGameStart += SpawnBlocks;
         GameManager.Instance.OnBlockPlaced += CheckRemainBlocks;
     }
@@ -29,7 +29,7 @@ public class BlocksManager : MonoBehaviour
     {
         for (int i = 0; i < 3; i++)
         {
-            Shape shape = shapeManager.GetRandomShape();
+            Shape shape = shapePool.GetRandomShape();
             blocksList[i].transform.localPosition = (Vector3)spawnPositions[i];
             blocksList[i].Init(shape);
         }

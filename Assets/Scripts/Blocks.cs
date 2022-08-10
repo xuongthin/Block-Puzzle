@@ -74,7 +74,7 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
 
         Vector3 offset = new Vector2((minX + maxX) / 2, (minY + maxY) / 2);
         Recenter(offset);
-        container.localScale *= 0.5f;
+        container.localScale = Vector3.one * setting.onBoardScale;
         image.raycastTarget = true;
         CheckPlayability();
     }
@@ -204,6 +204,6 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
         // container.localPosition -= (Vector3)setting.offset;
         container.DOLocalMove(Vector3.zero, 0.25f);
         // container.localScale *= 0.5f;
-        container.DOScale(Vector3.one / 2, 0.25f).OnComplete(() => image.raycastTarget = true);
+        container.DOScale(Vector3.one * setting.onBoardScale, 0.25f).OnComplete(() => image.raycastTarget = true);
     }
 }

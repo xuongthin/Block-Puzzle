@@ -7,4 +7,5 @@ public class BlocksSetting : ScriptableObject
 {
     public float size;
     public Vector2 offset;
+    public float onBoardScale;
 }

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class ShapePool
+[CreateAssetMenu(fileName = "Shape Pool", menuName = "Shape Pool")]
+public class ShapePool : ScriptableObject
 {
     public readonly int[] I1 = {
         0, 0, 0, 0, 0,
@@ -109,39 +109,56 @@ public class ShapePool
         0, 0, 0, 0, 0
     };
 
-    private List<Shape> shapes;
+    [SerializeField] private int I1Probability;
+    [SerializeField] private int I2Probability;
+    [SerializeField] private int I3Probability;
+    [SerializeField] private int I4Probability;
+    [SerializeField] private int I5Probability;
+    [SerializeField] private int L2Probability;
+    [SerializeField] private int L23Probability;
+    [SerializeField] private int L32Probability;
+    [SerializeField] private int L33Probability;
+    [SerializeField] private int ZProbability;
+    [SerializeField] private int TProbability;
+    [SerializeField] private int O2Probability;
+    [SerializeField] private int O3Probability;
 
-    public ShapePool()
+    private ProbabilityList<Shape> shapes;
+
+    public void Init()
     {
-        shapes = new List<Shape>();
+        shapes = new ProbabilityList<Shape>();
         CreateShapes();
     }
 
     public Shape GetRandomShape()
     {
-        int id = Random.Range(0, shapes.Count);
-        return shapes[id];
+        return shapes.Get();
     }
 
     private void CreateShapes()
     {
-        CreateShape(I1, false, false);
-        CreateShape(I2, true, false);
-        CreateShape(I3, true, false);
-        CreateShape(I4, true, false);
-        CreateShape(I5, true, false);
-        CreateShape(L2, true, true);
-        CreateShape(L23, true, true);
-        CreateShape(L32, true, true);
-        CreateShape(L33, true, true);
-        CreateShape(Z, true, true);
-        CreateShape(T, true, true);
-        CreateShape(O2, false, false);
-        CreateShape(O3, false, false);
+        CreateShape(I1, false, false, I1Probability);
+        CreateShape(I2, true, false, I2Probability);
+        CreateShape(I3, true, false, I3Probability);
+        CreateShape(I4, true, false, I4Probability);
+        CreateShape(I5, true, false, I5Probability);
+        CreateShape(L2, true, true, L2Probability);
+        CreateShape(L23, true, true, L23Probability);
+        CreateShape(L32, true, true, L32Probability);
+        CreateShape(L33, true, true, L33Probability);
+        CreateShape(Z, true, true, ZProbability);
+        CreateShape(T, true, true, TProbability);
+        CreateShape(O2, false, false, O2Probability);
+        CreateShape(O3, false, false, O3Probability);
     }
 
-    private void CreateShape(int[] input, bool createRotate, bool createFlip)
+    private void CreateShape(int[] input, bool createRotate, bool createFlip, int probability)
     {
+        probability *= 4;
+        probability /= createRotate ? 2 : 1;
+        probability /= createFlip ? 2 : 1;
+
         bool[,] matrix = new bool[5, 5];
         for (int j = 0; j < 5; j++)
         {
@@ -151,48 +168,31 @@ public class ShapePool
             }
         }
 
-        CreateShape(matrix);
+        CreateShape(matrix, probability);
 
         if (createRotate)
         {
             bool[,] rotateMatrix = matrix.Rotate();
-            CreateShape(rotateMatrix);
+            CreateShape(rotateMatrix, probability);
         }
 
         if (createFlip)
         {
             bool[,] flipMatrix = matrix.FlipHorizontal();
-            CreateShape(flipMatrix);
+            CreateShape(flipMatrix, probability);
 
             if (createRotate)
             {
                 bool[,] rotateFlipMatrix = flipMatrix.Rotate();
-                CreateShape(rotateFlipMatrix);
+                CreateShape(rotateFlipMatrix, probability);
             }
         }
     }
 
-    private void CreateShape(bool[,] matrix)
+    private void CreateShape(bool[,] matrix, int probabilities)
     {
         Shape shape = new Shape(matrix);
-        shapes.Add(shape);
-    }
-
-    private int GetBitMask(bool[,] matrix)
-    {
-        int result = 0;
-        for (int i = 0; i < 5; i++)
-        {
-            for (int j = 0; j < 5; j++)
-            {
-                if (matrix[i, j])
-                {
-                    int id = i + j * 8;
-                    result += 1 << id;
-                }
-            }
-        }
-        return result;
+        shapes.Add(shape, probabilities);
     }
 }
 

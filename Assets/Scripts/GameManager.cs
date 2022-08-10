@@ -73,7 +73,7 @@ public class GameManager : MonoBehaviour
         {
             additionalScore = value;
         }
-        UIManager.Instance.AddScore(additionalScore);
+        UIManager.Instance.QueueAddScore(additionalScore);
     }
 
     public void Replay()
