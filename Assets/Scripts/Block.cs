@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class Block : PooledObject
 {
@@ -9,11 +10,7 @@ public class Block : PooledObject
     private BlockColor color;
     private Vector2Int cell;
     public Vector2Int Cell => cell;
-
-    public override void OnCreated(ObjectPool pool)
-    {
-        base.OnCreated(pool);
-    }
+    public BlockColor Color => color;
 
     public void SetColor()
     {
@@ -48,7 +45,17 @@ public class Block : PooledObject
     {
         // TODO: create animation by DoTween
         transform.parent = Grid.Instance.transform;
-        transform.localPosition = Grid.Instance.Cell2LocalPosition(cell);
+        Vector3 targetLocalPosition = Grid.Instance.Cell2LocalPosition(cell);
+        transform.DOLocalMove(targetLocalPosition, 0.25f);
         Grid.Instance.Fill(this, cell);
+    }
+
+    public override void ReturnToPool()
+    {
+        transform.DOScale(Vector3.zero, 0.25f).OnComplete(() =>
+        {
+            base.ReturnToPool();
+            transform.localScale = Vector3.one;
+        });
     }
 }

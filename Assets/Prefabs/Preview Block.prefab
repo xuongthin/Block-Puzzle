@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4196713158480013147}
-  - component: {fileID: 1029687557448287196}
+  - component: {fileID: 6742020277875450111}
   m_Layer: 5
   m_Name: Preview Block
   m_TagString: Untagged
@@ -37,7 +37,7 @@ RectTransform:
   m_AnchoredPosition: {x: -61, y: 66}
   m_SizeDelta: {x: 115, y: 114}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1029687557448287196
+--- !u!114 &6742020277875450111
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -46,7 +46,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4196713158480013144}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f5c44ca76dc1cc4b8d2e719209bd2cc, type: 3}
+  m_Script: {fileID: 11500000, guid: 89e4ae01f1406f249b97221794a3e7b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   image: {fileID: 8092581497806590311}

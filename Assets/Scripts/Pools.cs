@@ -11,7 +11,7 @@ public class Pools : MonoBehaviour
     }
 
     [SerializeField] private Block blockPrefab;
-    [SerializeField] private PooledObject previewBlockPrefab;
+    [SerializeField] private PreviewBlock previewBlockPrefab;
     private ObjectPool blockPool;
     private ObjectPool previewBlockPool;
 
@@ -26,8 +26,8 @@ public class Pools : MonoBehaviour
         return (blockPool.Release() as Block);
     }
 
-    public Block GetPreviewBlock()
+    public PreviewBlock GetPreviewBlock()
     {
-        return (previewBlockPool.Release() as Block);
+        return (previewBlockPool.Release() as PreviewBlock);
     }
 }

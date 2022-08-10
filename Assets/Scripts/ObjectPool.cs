@@ -42,7 +42,7 @@ public class ObjectPool
 
     private PooledObject CreateObject()
     {
-        PooledObject obj = Object.Instantiate(prefab);
+        PooledObject obj = Object.Instantiate(prefab, transform);
         obj.OnCreated(this);
         Add(obj);
 

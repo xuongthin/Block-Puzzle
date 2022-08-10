@@ -1,15 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using DG.Tweening;
 
 public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
-    [SerializeField] private Transform virtualTransform;
+    [SerializeField] private Transform container;
+    [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private Image image;
     private BlocksSetting setting;
     private List<Block> blockList;
-
-    [SerializeField] private CanvasGroup canvasGroup;
     private Shape shape;
     private BlockColor color;
     private Vector3 initPosition;
@@ -36,12 +38,12 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
         initPosition = transform.position;
         isPlayed = false;
 
-        virtualTransform.position = transform.position;
+        container.localPosition = Vector3.zero;
 
         color = (BlockColor)Random.Range(0, 7);
 
         bool[,] matrix = shape.matrix;
-        float maxX = 0.0f, maxY = 0.0f;
+        float maxX = -1000.0f, maxY = -1000.0f;
         float minX = 1000.0f, minY = 1000.0f;
 
         for (int i = 0; i < 5; i++)
@@ -51,7 +53,7 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
                 if (matrix[i, j])
                 {
                     Block block = Pools.Instance.GetBlock();
-                    block.transform.parent = virtualTransform;
+                    block.transform.parent = container;
                     Vector3 position = new Vector2(i, j) * setting.size;
                     block.transform.localPosition = position;
                     block.SetColor(color);
@@ -69,8 +71,11 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
                 }
             }
         }
+
         Vector3 offset = new Vector2((minX + maxX) / 2, (minY + maxY) / 2);
         Recenter(offset);
+        container.localScale *= 0.5f;
+        image.raycastTarget = true;
         CheckPlayability();
     }
 
@@ -82,16 +87,14 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        transform.position = (eventData.position + setting.offset);
-        BlocksManager.Instance.SetMovingBlocks(this);
+        HightLightBlocks();
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        transform.position = (eventData.position + setting.offset);
-        blockList[0].CheckOnCell();
-        Vector2Int cellPosition = blockList[0].Cell;
-        if (cellPosition != previousCellPosition)
+        transform.position = eventData.position;
+
+        if (CheckMovement())
         {
             if (CheckPlacability())
             {
@@ -103,7 +106,6 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
                 isPlacable = false;
                 ClearPreview();
             }
-            previousCellPosition = cellPosition;
         }
     }
 
@@ -111,32 +113,39 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
     {
         if (isPlacable)
         {
-            isPlacable = false;
-            isPlayed = true;
-            while (blockList.Count > 0)
-            {
-                blockList[0].PlaceOnGrid();
-                blockList.RemoveAt(0);
-            }
+            PlaceBlocks();
             GameManager.Instance.OnBlockPlaced();
         }
         else
         {
-            // TODO: return to init position
-            transform.position = initPosition;
+            ResetBlock();
+
         }
+
+        ClearPreview();
     }
 
     private void Recenter(Vector3 offset)
     {
-        virtualTransform.position -= offset;
         foreach (Block block in blockList)
-            block.transform.parent = transform;
+            block.transform.localPosition -= offset;
     }
 
     private void SetBlocksStatus(bool active)
     {
         canvasGroup.alpha = active ? 1 : 0.5f;
+    }
+
+    private bool CheckMovement()
+    {
+        blockList[0].CheckOnCell();
+        Vector2Int cellPosition = blockList[0].Cell;
+        if (cellPosition != previousCellPosition)
+        {
+            previousCellPosition = cellPosition;
+            return true;
+        }
+        return false;
     }
 
     private bool CheckPlacability()
@@ -148,6 +157,15 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
                 return false;
         }
         return true;
+    }
+
+    private void HightLightBlocks()
+    {
+        transform.SetAsLastSibling();
+        container.DOLocalMove(setting.offset, 0.25f);
+        // container.localScale *= 2;
+        container.DOScale(Vector3.one, 0.25f);
+        BlocksManager.Instance.SetMovingBlocks(this);
     }
 
     private void RefreshPreview()
@@ -164,23 +182,28 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
         Grid.Instance.ClearPreview();
     }
 
-#if UNITY_EDITOR
-    private void OnDrawGizmos()
+    private void PlaceBlocks()
     {
-        if (shape != null)
+        isPlacable = false;
+        isPlayable = false;
+        isPlayed = true;
+        image.raycastTarget = false;
+        GameManager.Instance.AddScore(blockList.Count);
+        while (blockList.Count > 0)
         {
-            bool[,] matrix = shape.matrix;
-            for (int i = 0; i < 5; i++)
-            {
-                for (int j = 0; j < 5; j++)
-                {
-                    Color color = matrix[i, j] ? Color.green : Color.gray;
-                    Gizmos.color = color;
-                    Vector3 position = transform.position + new Vector3((i - 2) * setting.size, (j - 2) * setting.size, 0);
-                    Gizmos.DrawWireCube(position, Vector3.one * setting.size * 0.8f);
-                }
-            }
+            blockList[0].PlaceOnGrid();
+            blockList.RemoveAt(0);
         }
     }
-#endif
+
+    private void ResetBlock()
+    {
+        image.raycastTarget = false;
+        // transform.position = initPosition;
+        transform.DOMove(initPosition, 0.25f);
+        // container.localPosition -= (Vector3)setting.offset;
+        container.DOLocalMove(Vector3.zero, 0.25f);
+        // container.localScale *= 0.5f;
+        container.DOScale(Vector3.one / 2, 0.25f).OnComplete(() => image.raycastTarget = true);
+    }
 }

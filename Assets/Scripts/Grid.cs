@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 
 public class Grid : MonoBehaviour
 {
@@ -16,6 +15,7 @@ public class Grid : MonoBehaviour
     private Block[,] grid;
     private bool[,] fill;
     private bool[,] preview;
+    private List<PreviewBlock> previewBlocks;
     private HashSet<int> checkListX;
     private HashSet<int> checkListY;
     private HashSet<int> fullfilListX;
@@ -28,6 +28,7 @@ public class Grid : MonoBehaviour
         fill = new bool[8, 8];
         preview = new bool[8, 8];
         ResetPreview();
+        previewBlocks = new List<PreviewBlock>();
         checkListX = new HashSet<int>();
         checkListY = new HashSet<int>();
         fullfilListX = new HashSet<int>();
@@ -59,17 +60,17 @@ public class Grid : MonoBehaviour
 
     public Vector2 Cell2LocalPosition(Vector2Int cell)
     {
-        return new Vector2(size / 2 + cell.x * size, size / 2 + cell.y * size);
+        return new Vector2(cellSize / 2 + cell.x * cellSize, cellSize / 2 + cell.y * cellSize);
     }
 
     public void Fill(Block block, Vector2Int cell, bool temporary = false)
     {
         if (temporary)
         {
-            // Block block = Pools.Instance.
             preview[cell.x, cell.y] = true;
             checkListX.Add(cell.x);
             checkListY.Add(cell.y);
+            PlacePreviewBlock(cell, block.Color);
         }
         else
         {
@@ -81,7 +82,6 @@ public class Grid : MonoBehaviour
     public bool CheckBlockPlayability(Shape shape)
     {
         bool[,] matrix = shape.matrix;
-        Vector4Int space = shape.space;
         for (int i = -2; i <= 5; i++)
         {
             for (int j = -2; j <= 5; j++)
@@ -144,12 +144,20 @@ public class Grid : MonoBehaviour
                     grid[x, y].SetColor();
             }
 
+        while (previewBlocks.Count > 0)
+        {
+            previewBlocks[0].ReturnToPool();
+            previewBlocks.RemoveAt(0);
+        }
+
         fullfilListY.Clear();
         ResetPreview();
     }
 
-    public void AfterFill()
+    private void AfterFill()
     {
+        int combo = 0;
+
         foreach (int x in fullfilListX)
         {
             for (int y = 0; y < 8; y++)
@@ -158,7 +166,10 @@ public class Grid : MonoBehaviour
                 grid[x, y] = null;
                 fill[x, y] = false;
             }
+
+            combo++;
         }
+        fullfilListX.Clear();
 
         foreach (int y in fullfilListY)
         {
@@ -171,8 +182,12 @@ public class Grid : MonoBehaviour
                     fill[x, y] = false;
                 }
             }
-        }
 
+            combo++;
+        }
+        fullfilListY.Clear();
+
+        GameManager.Instance.AddScore(combo, true);
         ResetPreview();
     }
 
@@ -196,7 +211,7 @@ public class Grid : MonoBehaviour
                 int x = i + shift.x;
                 int y = j + shift.y;
 
-                if (0 < x && x < fill.GetLength(0) && 0 < y && y < fill.GetLength(1))
+                if (0 <= x && x < fill.GetLength(0) && 0 <= y && y < fill.GetLength(1))
                 {
                     if (matrix[i, j] && fill[x, y])
                         return true;
@@ -233,32 +248,33 @@ public class Grid : MonoBehaviour
         return true;
     }
 
-#if UNITY_EDITOR
-    private void OnDrawGizmosSelected()
+    private void PlacePreviewBlock(Vector2Int cell, BlockColor color)
     {
-        Vector3 startPosition = transform.position + new Vector3(cellSize / 2, cellSize / 2, 0);
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                if (fill[i, j])
-                    Gizmos.color = Color.red;
-                else
-                    Gizmos.color = Color.blue;
-
-                Vector3 position = startPosition + new Vector3(i * cellSize, j * cellSize);
-                Gizmos.DrawWireCube(position, new Vector3(cellSize, cellSize, 0) * 0.9f);
-            }
-        }
+        PreviewBlock previewBlock = Pools.Instance.GetPreviewBlock();
+        previewBlock.transform.parent = transform;
+        Vector2 localPosition = Cell2LocalPosition(cell);
+        previewBlock.SetLocalPosition(localPosition);
+        previewBlock.SetColor(color);
+        previewBlocks.Add(previewBlock);
     }
-#endif
-}
 
-[CustomEditor(typeof(Grid))]
-public class GridEditor : Editor
-{
-    public override void OnInspectorGUI()
-    {
-        base.OnInspectorGUI();
-    }
+    // #if UNITY_EDITOR
+    //     private void OnDrawGizmosSelected()
+    //     {
+    //         Vector3 startPosition = transform.position + new Vector3(size / 2, size / 2, 0);
+    //         for (int i = 0; i < 8; i++)
+    //         {
+    //             for (int j = 0; j < 8; j++)
+    //             {
+    //                 if (fill[i, j])
+    //                     Gizmos.color = Color.red;
+    //                 else
+    //                     Gizmos.color = Color.blue;
+
+    //                 Vector3 position = startPosition + new Vector3(i * size, j * size);
+    //                 Gizmos.DrawWireCube(position, new Vector3(size, size, 0) * 0.9f);
+    //             }
+    //         }
+    //     }
+    // #endif
 }

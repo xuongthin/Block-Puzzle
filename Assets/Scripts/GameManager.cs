@@ -6,20 +6,35 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    #region Singleton
     public static GameManager Instance;
-    [SerializeField] private BlocksSetting blocksSetting;
-    [SerializeField] private BlockSetting blockSetting;
-
-    public BlocksSetting BlocksSetting => blocksSetting;
-    public BlockSetting BlockSetting => blockSetting;
-
-    public Action OnGameStart;
-    public Action OnBlockPlaced;
-    public Action OnGameOver;
 
     private void Awake()
     {
         Instance = this;
+    }
+    #endregion
+
+    #region  Cache
+    [SerializeField] private BlocksSetting blocksSetting;
+    [SerializeField] private BlockSetting blockSetting;
+    private int score;
+    #endregion
+
+    #region Public access
+    public BlocksSetting BlocksSetting => blocksSetting;
+    public BlockSetting BlockSetting => blockSetting;
+    public int Score => score;
+
+    public Action OnGameStart;
+    public Action OnBlockPlaced;
+    public Action OnGameOver;
+    #endregion
+
+    private void Start()
+    {
+        Application.targetFrameRate = 60;
+        StartCoroutine(StartGame());
 
         OnBlockPlaced += delegate ()
         {
@@ -32,10 +47,33 @@ public class GameManager : MonoBehaviour
         };
     }
 
-    private void Start()
+    public void AddScore(int value, bool isCombo = false)
     {
-        Application.targetFrameRate = 60;
-        StartCoroutine(StartGame());
+        int additionalScore;
+
+        if (isCombo)
+        {
+            switch (value)
+            {
+                case 1:
+                    additionalScore = 10;
+                    break;
+                case 2:
+                    additionalScore = 30;
+                    break;
+                case 3:
+                    additionalScore = 60;
+                    break;
+                default:
+                    additionalScore = value * 40;
+                    break;
+            }
+        }
+        else
+        {
+            additionalScore = value;
+        }
+        UIManager.Instance.AddScore(additionalScore);
     }
 
     public void Replay()

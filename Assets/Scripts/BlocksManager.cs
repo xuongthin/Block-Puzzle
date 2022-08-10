@@ -30,7 +30,7 @@ public class BlocksManager : MonoBehaviour
         for (int i = 0; i < 3; i++)
         {
             Shape shape = shapeManager.GetRandomShape();
-            blocksList[i].transform.position = transform.position + (Vector3)spawnPositions[i];
+            blocksList[i].transform.localPosition = (Vector3)spawnPositions[i];
             blocksList[i].Init(shape);
         }
 

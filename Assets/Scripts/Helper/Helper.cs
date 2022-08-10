@@ -164,6 +164,26 @@ public static class Helper
 
         return clone;
     }
+
+    public static void GetPlayerPref(out int value, string key, int initValue = 0)
+    {
+        value = PlayerPrefs.GetInt(key, Int32.MinValue);
+        if (value == Int32.MinValue)
+        {
+            value = initValue;
+            PlayerPrefs.SetInt(key, value);
+        }
+    }
+
+    public static void GetPlayerPref(out float value, string key, float initValue = 0)
+    {
+        value = PlayerPrefs.GetFloat(key, float.MinValue);
+        if (value == float.MinValue)
+        {
+            value = initValue;
+            PlayerPrefs.SetFloat(key, value);
+        }
+    }
 }
 
 [Serializable]
