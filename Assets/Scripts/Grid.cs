@@ -24,7 +24,6 @@ public class Grid : MonoBehaviour
 
     private void Start()
     {
-        size = cellSize * UIManager.Instance.UIScale;
         grid = new Block[8, 8];
         fill = new bool[8, 8];
         preview = new bool[8, 8];
@@ -35,10 +34,14 @@ public class Grid : MonoBehaviour
         fullfilListX = new HashSet<int>();
         fullfilListY = new HashSet<int>();
 
+        GameManager.Instance.OnGameStart += delegate ()
+        {
+            size = cellSize * UIManager.Instance.UIScale;
+        };
         GameManager.Instance.OnBlockPlaced += AfterFill;
     }
 
-    public Vector2Int Position2Cell(Vector2 position)
+    public Vector2Int Position2Cell(Vector2 position, bool quickCheck = false)
     {
         position -= (Vector2)transform.position;
 
@@ -48,6 +51,9 @@ public class Grid : MonoBehaviour
         Vector2Int cell = new Vector2Int();
         cell.x = (int)(position.x / size);
         cell.y = (int)(position.y / size);
+
+        if (quickCheck)
+            return cell;
 
         Vector2 normalizePosition = new Vector2(cell.x, cell.y) * size;
 
@@ -266,23 +272,23 @@ public class Grid : MonoBehaviour
         previewBlocks.Add(previewBlock);
     }
 
-    // #if UNITY_EDITOR
-    //     private void OnDrawGizmosSelected()
-    //     {
-    //         Vector3 startPosition = transform.position + new Vector3(size / 2, size / 2, 0);
-    //         for (int i = 0; i < 8; i++)
-    //         {
-    //             for (int j = 0; j < 8; j++)
-    //             {
-    //                 if (fill[i, j])
-    //                     Gizmos.color = Color.red;
-    //                 else
-    //                     Gizmos.color = Color.blue;
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        Vector3 startPosition = transform.position + new Vector3(size / 2, size / 2, 0);
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (fill != null && fill[i, j])
+                    Gizmos.color = Color.red;
+                else
+                    Gizmos.color = Color.blue;
 
-    //                 Vector3 position = startPosition + new Vector3(i * size, j * size);
-    //                 Gizmos.DrawWireCube(position, new Vector3(size, size, 0) * 0.9f);
-    //             }
-    //         }
-    //     }
-    // #endif
+                Vector3 position = startPosition + new Vector3(i * size, j * size);
+                Gizmos.DrawWireCube(position, new Vector3(size, size, 0) * 0.9f);
+            }
+        }
+    }
+#endif
 }

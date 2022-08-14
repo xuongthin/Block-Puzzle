@@ -12,13 +12,16 @@ public class Pools : MonoBehaviour
 
     [SerializeField] private Block blockPrefab;
     [SerializeField] private PreviewBlock previewBlockPrefab;
+    [SerializeField] private BlockParticle blockParticlePrefab;
     private ObjectPool blockPool;
     private ObjectPool previewBlockPool;
+    private ObjectPool blockParticlePool;
 
     private void Start()
     {
         blockPool = new ObjectPool(blockPrefab, 100, transform);
         previewBlockPool = new ObjectPool(previewBlockPrefab, 20, transform);
+        blockParticlePool = new ObjectPool(blockParticlePrefab, 50, transform);
     }
 
     public Block GetBlock()
@@ -29,5 +32,10 @@ public class Pools : MonoBehaviour
     public PreviewBlock GetPreviewBlock()
     {
         return (previewBlockPool.Release() as PreviewBlock);
+    }
+
+    public BlockParticle GetBlockParticle()
+    {
+        return (blockParticlePool.Release() as BlockParticle);
     }
 }

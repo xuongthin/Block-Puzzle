@@ -8,6 +8,7 @@ public class Block : PooledObject
 {
     [SerializeField] private Image image;
     private BlockColor color;
+    private BlockColor tempColor;
     private Vector2Int cell;
     public Vector2Int Cell => cell;
     public BlockColor Color => color;
@@ -20,15 +21,20 @@ public class Block : PooledObject
     public void SetColor(BlockColor color, bool temporary = false)
     {
         if (!temporary)
+        {
             this.color = color;
+            tempColor = color;
+        }
+        else
+            tempColor = color;
 
         Sprite sprite = GameManager.Instance.BlockSetting.sprites[((int)color)];
         image.sprite = sprite;
     }
 
-    public void CheckOnCell()
+    public void CheckOnCell(bool quickCheck = false)
     {
-        cell = Grid.Instance.Position2Cell(transform.position);
+        cell = Grid.Instance.Position2Cell(transform.position, quickCheck);
     }
 
     public bool OnEmptyCell()
@@ -43,7 +49,6 @@ public class Block : PooledObject
 
     public void PlaceOnGrid()
     {
-        // TODO: create animation by DoTween
         transform.parent = Grid.Instance.transform;
         Vector3 targetLocalPosition = Grid.Instance.Cell2LocalPosition(cell);
         transform.DOLocalMove(targetLocalPosition, 0.25f);
@@ -52,6 +57,10 @@ public class Block : PooledObject
 
     public override void ReturnToPool()
     {
+        BlockParticle particle = Pools.Instance.GetBlockParticle();
+        particle.transform.position = transform.position;
+        particle.SetColor(tempColor);
+        particle.Play();
         transform.DOScale(Vector3.zero, 0.25f).OnComplete(() =>
         {
             base.ReturnToPool();

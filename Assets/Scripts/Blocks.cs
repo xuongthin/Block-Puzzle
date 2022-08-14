@@ -92,10 +92,18 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
 
     public void OnDrag(PointerEventData eventData)
     {
-        transform.position = eventData.position;
+        Vector2 temp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        transform.position = temp;
 
         if (CheckMovement())
         {
+            if (previousCellPosition == Vector2Int.down)
+            {
+                isPlacable = false;
+                ClearPreview();
+                return;
+            }
+
             if (CheckPlacability())
             {
                 isPlacable = true;
@@ -152,7 +160,7 @@ public class Blocks : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointer
     {
         foreach (Block block in blockList)
         {
-            block.CheckOnCell();
+            block.CheckOnCell(true);
             if (!block.OnEmptyCell())
                 return false;
         }

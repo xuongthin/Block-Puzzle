@@ -1070,7 +1070,7 @@ Canvas:
   m_GameObject: {fileID: 458523233}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
+  m_RenderMode: 1
   m_Camera: {fileID: 519420031}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
@@ -2056,8 +2056,8 @@ Canvas:
   m_GameObject: {fileID: 715970211}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_RenderMode: 1
+  m_Camera: {fileID: 519420031}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -2362,6 +2362,8 @@ MonoBehaviour:
   blockPrefab: {fileID: 6696631742433695671, guid: 6dc370ca1200d654f94d1f8b16e5f484,
     type: 3}
   previewBlockPrefab: {fileID: 6742020277875450111, guid: 4c912da689af4684b9348ff336176c77,
+    type: 3}
+  blockParticlePrefab: {fileID: 987828893861069872, guid: 0927e2070b4629c49bc0910324093403,
     type: 3}
 --- !u!1 &871255665
 GameObject:
@@ -3052,7 +3054,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 8.1, y: 45.1}
+  m_AnchoredPosition: {x: 8.100006, y: 45.1}
   m_SizeDelta: {x: -108.52014, y: -72.842285}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1332623642
@@ -4409,8 +4411,8 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3582853390533094486, guid: 397735938f1a0934f91e4912c2c3b164,
         type: 3}
-      propertyPath: cellCheckSize
-      value: 60
+      propertyPath: cellDetect
+      value: 0.9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 397735938f1a0934f91e4912c2c3b164, type: 3}
