@@ -184,6 +184,14 @@ public static class Helper
             PlayerPrefs.SetFloat(key, value);
         }
     }
+
+    public static bool OutOfRect(this Vector2 position, Vector2 rectCenter, Vector2 rectSize)
+    {
+        Vector2 offset = position - rectCenter;
+        if (Math.Abs(offset.x) <= rectSize.x / 2 && Math.Abs(offset.y) <= rectSize.y / 2)
+            return false;
+        return true;
+    }
 }
 
 [Serializable]
